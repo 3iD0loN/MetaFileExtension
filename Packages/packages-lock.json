@@ -213,9 +213,9 @@
       "url": "https://packages.unity.com"
     },
     "com.usp.metafileextension": {
-      "version": "file:../../com.usp.metafileextension",
+      "version": "file:com.usp.metafileextension",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {}
     },
     "com.unity.modules.accessibility": {
