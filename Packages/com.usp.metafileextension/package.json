@@ -1,0 +1,9 @@
+{
+  "name": "com.usp.metafileextension",
+  "displayName": "Meta File Extension",
+  "version": "0.0.1",
+  "unity": "6000.0",
+  "description": "",
+  "category": "Framework",
+  "type": "library"
+}
