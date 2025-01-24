@@ -50,6 +50,21 @@ namespace USP.MetaFileExtension
             return default;
         }
 
+        public static void Clear(AssetImporter assetImporter, string key)
+        {
+            var jsonObjectMap = GetUserDataMap(assetImporter);
+
+            // Serialize the user data to JSON.
+            // Associate the JSON entry with the key.
+            jsonObjectMap.Remove(key);
+
+            // Serialize the map to JSON.
+            // Set the asset importer's user data.
+            assetImporter.userData = JsonSerializer.Serialize(jsonObjectMap);
+
+            assetImporter.SaveAndReimport();
+        }
+
         public static void Write<T>(AssetImporter assetImporter, string key, T userDataEntry)
         {
             var jsonObjectMap = GetUserDataMap(assetImporter);
