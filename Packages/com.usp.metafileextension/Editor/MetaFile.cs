@@ -15,8 +15,10 @@ namespace USP.MetaFileExtension
             var jsonObjectMap = GetUserDataMap(assetImporter);
 
             // Attempt to get the item associated with the key.
-            // If there is an item associated with the key, then:
-            if (jsonObjectMap.TryGetValue(key, out string userDataEntryJson))
+            bool found = jsonObjectMap.TryGetValue(key, out string userDataEntryJson);
+
+            // If there is an item associated with the key and the item is valid, then:
+            if (found && !string.IsNullOrEmpty(userDataEntryJson))
             {
                 // Deserialize the user data entry from JSON.
                 T userDataEntry = JsonUtility.FromJson<T>(userDataEntryJson);
@@ -32,13 +34,8 @@ namespace USP.MetaFileExtension
                 // Create a new instance of the user data based off the asset importer.
                 T userDataEntry = factory(assetImporter);
 
-                // Serialize the user data to JSON.
-                // Associate the JSON entry with the key.
-                jsonObjectMap[key] = JsonUtility.ToJson(userDataEntry);
-
-                // Serialize the map to JSON.
-                // Set the asset importer's user data.
-                assetImporter.userData = JsonSerializer.Serialize(jsonObjectMap);
+                ChangeEntry(jsonObjectMap, key, userDataEntry);
+                WriteWithoutSave(assetImporter, jsonObjectMap);
 
                 // Return the new instance.
                 return userDataEntry;
@@ -54,36 +51,50 @@ namespace USP.MetaFileExtension
         {
             var jsonObjectMap = GetUserDataMap(assetImporter);
 
-            // Serialize the user data to JSON.
-            // Associate the JSON entry with the key.
-            jsonObjectMap.Remove(key);
-
-            // Serialize the map to JSON.
-            // Set the asset importer's user data.
-            assetImporter.userData = JsonSerializer.Serialize(jsonObjectMap);
-
-            assetImporter.SaveAndReimport();
+            RemoveEntry(jsonObjectMap, key);
+            WriteAndSave(assetImporter, jsonObjectMap);
         }
 
         public static void Write<T>(AssetImporter assetImporter, string key, T userDataEntry)
         {
             var jsonObjectMap = GetUserDataMap(assetImporter);
 
-            // Serialize the user data to JSON.
-            // Associate the JSON entry with the key.
-            jsonObjectMap[key] = JsonUtility.ToJson(userDataEntry);
+            ChangeEntry(jsonObjectMap, key, userDataEntry);
+            WriteAndSave(assetImporter, jsonObjectMap);
+        }
 
-            // Serialize the map to JSON.
-            // Set the asset importer's user data.
-            assetImporter.userData = JsonSerializer.Serialize(jsonObjectMap);
+        private static void ChangeEntry<T>(Dictionary<string, string> jsonObjectMap, string key, T userDataEntry)
+        {
+            jsonObjectMap[key] = JsonUtility.ToJson(userDataEntry);
+        }
+
+        private static void RemoveEntry(Dictionary<string, string> jsonObjectMap, string key)
+        {
+            jsonObjectMap.Remove(key);
+        }
+
+        private static void WriteAndSave(AssetImporter assetImporter, Dictionary<string, string> jsonObjectMap)
+        {
+            WriteWithoutSave(assetImporter, jsonObjectMap);
 
             assetImporter.SaveAndReimport();
         }
 
+        private static void WriteWithoutSave(AssetImporter assetImporter, Dictionary<string, string> jsonObjectMap)
+        {
+            // Serialize the map to JSON.
+            // Set the asset importer's user data.
+            assetImporter.userData = JsonSerializer.Serialize(jsonObjectMap);
+        }
+
         private static Dictionary<string, string> GetUserDataMap(AssetImporter assetImporter)
         {
+            // If there is no metafile user data, then assume that the json data is an empty json map.
+            // Otherwise, use the metafile user data string as-is to represent the map.
             var userDataMapJson = string.IsNullOrEmpty(assetImporter.userData) ? "{}" : assetImporter.userData;
 
+            // TODO: how do we handle if the metafile user data does not parse to the expercted type??
+            // Attempt to deserialize the map into an actual map of object instances associated by keywords.
             var userDataMap = JsonSerializer.Deserialize<Dictionary<string, string>>(userDataMapJson);
 
             return userDataMap; // ?? new Dictionary<string, string>();
