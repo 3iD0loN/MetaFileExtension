@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 using UnityEngine;
 using UnityEditor;
@@ -84,7 +84,7 @@ namespace USP.MetaFileExtension
         {
             // Serialize the map to JSON.
             // Set the asset importer's user data.
-            assetImporter.userData = JsonSerializer.Serialize(jsonObjectMap);
+            assetImporter.userData = JsonConvert.SerializeObject(jsonObjectMap);
         }
 
         private static Dictionary<string, string> GetUserDataMap(AssetImporter assetImporter)
@@ -95,10 +95,11 @@ namespace USP.MetaFileExtension
 
             // TODO: how do we handle if the metafile user data does not parse to the expercted type??
             // Attempt to deserialize the map into an actual map of object instances associated by keywords.
-            var userDataMap = JsonSerializer.Deserialize<Dictionary<string, string>>(userDataMapJson);
+            var userDataMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(userDataMapJson);
 
-            return userDataMap; // ?? new Dictionary<string, string>();
+            return userDataMap;
         }
         #endregion
     }
 }
+

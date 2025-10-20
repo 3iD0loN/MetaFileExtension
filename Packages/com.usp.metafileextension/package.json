@@ -3,7 +3,9 @@
   "displayName": "Meta File Extension",
   "version": "0.0.1",
   "unity": "6000.0",
-  "description": "",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
   "category": "Framework",
   "type": "library"
 }
